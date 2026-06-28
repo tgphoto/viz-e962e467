@@ -126,6 +126,8 @@
   @media(max-width:640px){
     section{min-height:auto; padding:8vh 6vw}
     #hero{min-height:92vh}
+    /* center the vignette on narrow screens so the graph isn't brighter on one side */
+    #veil{background:radial-gradient(150% 92% at 50% 40%, rgba(11,10,9,.74) 0%, rgba(11,10,9,.45) 46%, rgba(11,10,9,.1) 86%, rgba(11,10,9,0) 100%)}
     .row{flex-wrap:wrap; gap:.15rem .6rem; margin:1.05rem 0}
     .row .nm{width:auto!important; text-align:left!important; flex:1 1 auto; order:1; font-size:.88rem; line-height:1.25}
     .row .vl{width:auto!important; flex:0 1 auto; order:2; text-align:right; font-size:.82rem; line-height:1.25}
