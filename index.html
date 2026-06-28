@@ -24,7 +24,8 @@
   #veil{position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(135% 105% at 42% 42%, rgba(11,10,9,.72) 0%, rgba(11,10,9,.42) 42%, rgba(11,10,9,.06) 82%, rgba(11,10,9,0) 100%)}
   /* cursor "torch" — lights the graph only where you point */
   #torch{position:fixed; left:0; top:0; width:560px; height:560px; z-index:0; pointer-events:none; transform:translate(-50%,-50%); border-radius:50%; opacity:0; transition:opacity .5s; mix-blend-mode:screen; background:radial-gradient(circle, rgba(231,211,168,.14) 0%, rgba(200,168,107,.05) 38%, transparent 70%)}
-  .wrap{position:relative; z-index:1}
+  html{overflow-x:hidden}
+  .wrap{position:relative; z-index:1; overflow-x:clip}
   section{min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:12vh 8vw; max-width:1200px; margin:0 auto}
   h1,h2,h3{font-family:'Playfair Display',serif; font-weight:500; line-height:1.05}
   .eyebrow{font-size:.72rem; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); margin-bottom:1.4rem; font-weight:500}
@@ -117,7 +118,7 @@
   .navrail a:hover span{opacity:1}
   @media(max-width:760px){ .navrail{display:none} }
   /* receipts-on-hover tooltip */
-  .receipt-tip{position:fixed; left:-9999px; top:-9999px; z-index:20; pointer-events:none; opacity:0; transition:opacity .15s; background:rgba(13,11,9,.97); border:1px solid var(--line); border-radius:9px; padding:.75rem .95rem; max-width:290px; font-size:.78rem; line-height:1.55; color:#cfc6b6; box-shadow:0 12px 34px rgba(0,0,0,.55)}
+  .receipt-tip{position:fixed; left:0; top:0; z-index:20; pointer-events:none; opacity:0; transition:opacity .15s; background:rgba(13,11,9,.97); border:1px solid var(--line); border-radius:9px; padding:.75rem .95rem; max-width:290px; font-size:.78rem; line-height:1.55; color:#cfc6b6; box-shadow:0 12px 34px rgba(0,0,0,.55)}
   .receipt-tip .rt-h{color:var(--gold2); font-weight:500; margin-bottom:.3rem; font-size:.84rem}
   .receipt-tip .rt-ci{font-family:ui-monospace,monospace; color:var(--emerald); font-size:.72rem}
   [data-receipt]{cursor:help}
@@ -128,6 +129,7 @@
     #hero{min-height:92vh}
     /* center the vignette on narrow screens so the graph isn't brighter on one side */
     #veil{background:radial-gradient(150% 92% at 50% 40%, rgba(11,10,9,.74) 0%, rgba(11,10,9,.45) 46%, rgba(11,10,9,.1) 86%, rgba(11,10,9,0) 100%)}
+    #torch,#rtip{display:none}   /* no cursor on touch — and they can't widen the page */
     .row{flex-wrap:wrap; gap:.15rem .6rem; margin:1.05rem 0}
     .row .nm{width:auto!important; text-align:left!important; flex:1 1 auto; order:1; font-size:.88rem; line-height:1.25}
     .row .vl{width:auto!important; flex:0 1 auto; order:2; text-align:right; font-size:.82rem; line-height:1.25}
