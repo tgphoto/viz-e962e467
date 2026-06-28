@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Wynn · AI Visibility Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<style>
+  :root{ --bg:#0b0a09; --bg2:#13110e; --gold:#c8a86b; --gold2:#e7d3a8; --cream:#f3ece0; --muted:#9b9a8c; --line:rgba(200,168,107,.18); --emerald:#7fb59b; }
+  *{box-sizing:border-box; margin:0; padding:0}
+  /* Lenis smooth-scroll required CSS (must NOT also set scroll-behavior:smooth — they fight) */
+  html.lenis,html.lenis body{height:auto}
+  .lenis.lenis-smooth{scroll-behavior:auto!important}
+  .lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}
+  .lenis.lenis-stopped{overflow:hidden}
+  body{background:var(--bg); color:var(--cream); font-family:Inter,sans-serif; font-weight:300; overflow-x:hidden; -webkit-font-smoothing:antialiased}
+  #bg{position:fixed; inset:0; z-index:0}
+  /* dark vignette so the graph recedes behind the copy */
+  #veil{position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(135% 105% at 42% 42%, rgba(11,10,9,.72) 0%, rgba(11,10,9,.42) 42%, rgba(11,10,9,.06) 82%, rgba(11,10,9,0) 100%)}
+  /* cursor "torch" — lights the graph only where you point */
+  #torch{position:fixed; left:0; top:0; width:560px; height:560px; z-index:0; pointer-events:none; transform:translate(-50%,-50%); border-radius:50%; opacity:0; transition:opacity .5s; mix-blend-mode:screen; background:radial-gradient(circle, rgba(231,211,168,.14) 0%, rgba(200,168,107,.05) 38%, transparent 70%)}
+  .wrap{position:relative; z-index:1}
+  section{min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:12vh 8vw; max-width:1200px; margin:0 auto}
+  h1,h2,h3{font-family:'Playfair Display',serif; font-weight:500; line-height:1.05}
+  .eyebrow{font-size:.72rem; letter-spacing:.32em; text-transform:uppercase; color:var(--gold); margin-bottom:1.4rem; font-weight:500}
+  h1{font-size:clamp(2.6rem,7vw,5.6rem); letter-spacing:-.01em}
+  h2{font-size:clamp(2rem,4.6vw,3.4rem); margin-bottom:1.6rem}
+  .lede{font-size:clamp(1.05rem,1.8vw,1.4rem); color:#d8cdba; max-width:620px; line-height:1.55; font-weight:300}
+  .gold{color:var(--gold2)}
+  .reveal{opacity:0}
+  .hero-sub{margin-top:2rem; font-size:1.05rem; letter-spacing:.04em; color:#bdb3a0}
+  .scrollcue{position:absolute; bottom:5vh; left:50%; transform:translateX(-50%); font-size:.7rem; letter-spacing:.3em; text-transform:uppercase; color:var(--gold); opacity:.7}
+  /* bars */
+  .row{display:flex; align-items:center; gap:1rem; margin:.55rem 0}
+  .row .nm{width:160px; font-size:.92rem; color:#cfc6b6; text-align:right; flex:none}
+  .track{flex:1; height:30px; background:rgba(255,255,255,.04); border-radius:4px; position:relative; overflow:hidden}
+  .fill{height:100%; width:0; background:linear-gradient(90deg,#8a6f3e,var(--gold)); border-radius:4px}
+  .fill.subj{background:linear-gradient(90deg,#b98e3e,var(--gold2))}
+  .row .vl{width:118px; font-size:.85rem; color:#a89e8c; flex:none}
+  .cmpdot{display:inline-block; color:var(--emerald); font-weight:500}
+  /* stat grid */
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1.5rem; margin-top:2.5rem}
+  .stat{border:1px solid var(--line); border-radius:12px; padding:1.6rem 1.4rem; background:linear-gradient(160deg,rgba(200,168,107,.05),transparent)}
+  .stat .big{font-family:'Playfair Display',serif; font-size:2.8rem; color:var(--gold2); line-height:1}
+  .stat .lbl{margin-top:.6rem; font-size:.82rem; color:#a89e8c; letter-spacing:.02em}
+  .stat .ci{font-size:.72rem; color:#7d7464; margin-top:.3rem}
+  /* prominence */
+  .promgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.4rem; margin-top:2.4rem}
+  .pcard{border:1px solid var(--line); border-radius:14px; padding:1.8rem; text-align:center; background:rgba(255,255,255,.015)}
+  .pcard .surf{font-size:.82rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin-bottom:1.2rem}
+  .ring{position:relative; width:130px; height:130px; margin:0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--cream)}
+  .pcard .ment{margin-top:1rem; font-size:.8rem; color:#8f8676}
+  /* why */
+  .why .row .nm{width:240px}
+  .tag{display:inline-block; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; padding:.3rem .7rem; border:1px solid var(--line); border-radius:100px; color:var(--gold); margin-bottom:1rem}
+  .pillars{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.6rem; margin-top:2.4rem}
+  .pillar{border-top:2px solid var(--gold); padding-top:1.4rem}
+  .pillar h3{font-size:1.5rem; color:var(--gold2); margin-bottom:.8rem}
+  .pillar p{font-size:.95rem; color:#bdb3a0; line-height:1.55}
+  .foot{padding:8vh 8vw; text-align:center; border-top:1px solid var(--line); color:#7d7464; font-size:.8rem; letter-spacing:.05em}
+  .receipt{font-family:ui-monospace,monospace; font-size:.78rem; color:var(--emerald); margin-top:1.5rem; letter-spacing:.02em}
+  .big-emph{font-family:'Playfair Display',serif; font-size:clamp(2.4rem,6vw,4.6rem); color:var(--gold2); line-height:1.1; margin:1rem 0}
+  .compare{display:flex; flex-direction:column; max-width:1000px}
+  .cmp-head{display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; margin-bottom:.4rem; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase}
+  .cmp-head .h1{color:#7d7464} .cmp-head .h2{color:var(--gold)}
+  .cmp-row{display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; padding:1.3rem 0; border-bottom:1px solid var(--line); align-items:start}
+  .cmp-row .them{color:#857c6b; font-size:.98rem; line-height:1.45; position:relative; padding-left:1.5rem}
+  .cmp-row .them:before{content:'✕'; position:absolute; left:0; color:#6b5a3a}
+  .cmp-row .us{color:var(--cream); font-size:.98rem; line-height:1.45; position:relative; padding-left:1.5rem; font-weight:400}
+  .cmp-row .us:before{content:'✓'; position:absolute; left:0; color:var(--gold)}
+  .cmp-row .us em{color:var(--gold2); font-style:normal}
+  @media(max-width:680px){ .cmp-row,.cmp-head{grid-template-columns:1fr; gap:.4rem} }
+  .proc{display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; margin-top:2.6rem}
+  .proc .col h4{font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; margin-bottom:1rem}
+  .proc .them-col h4{color:#7d7464} .proc .us-col h4{color:var(--gold)}
+  .proc .step{padding:.7rem 0 .7rem 2.2rem; position:relative; font-size:.94rem; line-height:1.45; border-bottom:1px solid rgba(255,255,255,.05)}
+  .proc .step .i{position:absolute; left:0; top:.62rem; font-family:'Playfair Display',serif; font-size:1rem}
+  .proc .them-col{color:#857c6b} .proc .them-col .i{color:#6b5a3a}
+  .proc .us-col{color:var(--cream)} .proc .us-col .i{color:var(--gold)}
+  @media(max-width:680px){ .proc{grid-template-columns:1fr; gap:1rem} }
+  .twosurf{display:grid; grid-template-columns:1fr 1fr; gap:1.8rem; margin-top:2.6rem}
+  .surf-col{border:1px solid var(--line); border-radius:14px; padding:2rem; background:linear-gradient(160deg,rgba(200,168,107,.05),transparent)}
+  .surf-col .st{font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem}
+  .surf-col .sn{font-family:'Playfair Display',serif; font-size:3.4rem; color:var(--gold2); line-height:1; margin-bottom:1rem}
+  .surf-col .sl{font-size:.95rem; color:#bdb3a0; line-height:1.55}
+  @media(max-width:680px){ .twosurf{grid-template-columns:1fr} }
+  /* interactive prompt demo */
+  .demo-q{display:flex; flex-wrap:wrap; gap:.6rem; margin:2.2rem 0 2.8rem}
+  .qchip{font-size:.85rem; padding:.6rem 1.05rem; border:1px solid var(--line); border-radius:100px; color:#cfc6b6; cursor:pointer; background:rgba(255,255,255,.02); user-select:none; transition:color .3s,border-color .3s,background .3s,transform .2s}
+  .qchip:hover{border-color:var(--gold); color:var(--cream); transform:translateY(-1px)}
+  .qchip.on{background:linear-gradient(90deg,#8a6f3e,var(--gold)); color:#0b0a09; border-color:var(--gold); font-weight:500}
+  .demo-bars .row .nm{width:150px}
+  .demo-bars .fill{transition:width 1.05s cubic-bezier(.16,1,.3,1)}
+  .drow{opacity:.52; transition:opacity .5s}
+  .drow.lead{opacity:1}
+  .dbadge{display:inline-block; font-size:.64rem; letter-spacing:.1em; padding:.16rem .55rem; border-radius:100px; background:var(--gold); color:#0b0a09; margin-left:.5rem; font-weight:600; vertical-align:middle}
+  /* hover-reactive charts */
+  .row .fill{transition:width 1.4s cubic-bezier(.16,1,.3,1), filter .25s, box-shadow .25s}
+  .row:hover .fill{filter:brightness(1.22); box-shadow:0 0 18px rgba(200,168,107,.35)}
+  .pcard{transition:transform .3s, border-color .3s, box-shadow .3s}
+  .pcard:hover{transform:translateY(-4px); border-color:rgba(200,168,107,.4); box-shadow:0 14px 40px rgba(0,0,0,.4)}
+  .pillar{transition:transform .3s}
+  .pillar:hover{transform:translateY(-3px)}
+  /* section progress rail */
+  .navrail{position:fixed; right:26px; top:50%; transform:translateY(-50%); z-index:6; display:flex; flex-direction:column; gap:.8rem}
+  .navrail a{width:8px; height:8px; border-radius:50%; background:rgba(200,168,107,.22); cursor:pointer; position:relative; transition:background .3s,transform .3s,box-shadow .3s}
+  .navrail a:hover{background:var(--gold)}
+  .navrail a.on{background:var(--gold); box-shadow:0 0 10px rgba(200,168,107,.6); transform:scale(1.4)}
+  .navrail a span{position:absolute; right:18px; top:50%; transform:translateY(-50%); white-space:nowrap; font-size:.64rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); opacity:0; pointer-events:none; transition:opacity .25s}
+  .navrail a:hover span{opacity:1}
+  @media(max-width:760px){ .navrail{display:none} }
+  /* receipts-on-hover tooltip */
+  .receipt-tip{position:fixed; left:-9999px; top:-9999px; z-index:20; pointer-events:none; opacity:0; transition:opacity .15s; background:rgba(13,11,9,.97); border:1px solid var(--line); border-radius:9px; padding:.75rem .95rem; max-width:290px; font-size:.78rem; line-height:1.55; color:#cfc6b6; box-shadow:0 12px 34px rgba(0,0,0,.55)}
+  .receipt-tip .rt-h{color:var(--gold2); font-weight:500; margin-bottom:.3rem; font-size:.84rem}
+  .receipt-tip .rt-ci{font-family:ui-monospace,monospace; color:var(--emerald); font-size:.72rem}
+  [data-receipt]{cursor:help}
+  .row[data-receipt] .track{cursor:help}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="veil"></div>
+<div id="torch"></div>
+<div class="navrail" id="navrail"></div>
+<div class="receipt-tip" id="rtip"></div>
+<div class="wrap">
+
+  <section id="hero">
+    <div class="eyebrow reveal">In-house marketing intelligence</div>
+    <h1 class="reveal">AI doesn't search.<br>It <span class="gold">recommends.</span></h1>
+    <p class="lede hero-sub reveal">We measure what AI assistants actually say about Wynn — across ChatGPT, Gemini and Claude — with code-verified ground truth. Not rented. Not estimated. <span class="gold">Provable to the byte.</span></p>
+    <div class="scrollcue reveal">scroll</div>
+  </section>
+
+  <section id="validate">
+    <div class="eyebrow reveal">Measured, not estimated</div>
+    <h2 class="reveal">Wynn's real share of the<br>AI conversation — for <span class="gold">$10.</span></h2>
+    <p class="lede reveal">We query the models ourselves, on our own infrastructure. Of every time one of the eight Strip resorts gets named, here's Wynn's slice — and it lands <span class="gold">right on Muck Rack's Generative Pulse number</span>, from independent live data, re-derivable to the byte.</p>
+    <div id="sovbars" style="margin-top:3rem; max-width:760px"></div>
+    <p class="receipt reveal">◦ 960 model responses &nbsp;·&nbsp; 0 errors &nbsp;·&nbsp; every number regenerates bit-for-bit from stored raw ✓</p>
+    <p class="lede reveal" style="margin-top:1.6rem; font-size:1rem; color:#a89e8c">This matches the tool's own 12-question panel, apples to apples. On our <span class="gold">broader 28-question panel</span> — adding comparison and objection queries it never asked — Wynn lands even higher, at <span class="gold">24.6%</span>.</p>
+  </section>
+
+  <section id="gaps">
+    <div class="eyebrow reveal">Where the standard tools fall short</div>
+    <h2 class="reveal">What they miss —<br><span class="gold">and what we capture.</span></h2>
+    <div id="compare" style="margin-top:2.8rem"></div>
+  </section>
+
+  <section id="demo">
+    <div class="eyebrow reveal">See it for yourself</div>
+    <h2 class="reveal">Ask a real question.<br>Watch <span class="gold">who AI names.</span></h2>
+    <p class="lede reveal">Pick a question a luxury traveler actually asks. These are real measurements — each resort's share of the answer, across 28 questions × 4 models × 20 samples. <span class="gold">Wynn's bar is highlighted at its true rank.</span></p>
+    <div class="demo-q" id="demoq"></div>
+    <div class="demo-bars" id="demobars" style="max-width:760px"></div>
+  </section>
+
+  <section id="prominence">
+    <div class="eyebrow reveal">The signal their number hides</div>
+    <h2 class="reveal">Mentioned ≠ <span class="gold">recommended.</span></h2>
+    <p class="lede reveal">Wynn is <em>mentioned</em> in ~95% of answers everywhere — saturated, uninformative. But how often is Wynn the <span class="gold">#1 resort named</span>? That varies by model with real, measurable gaps — and it's where the strategy lives.</p>
+    <div class="promgrid" id="promgrid"></div>
+    <p class="lede reveal" style="margin-top:2rem">On ChatGPT a competitor takes the top spot <span class="gold">~38% of the time.</span> A single blended number could never show you that.</p>
+  </section>
+
+  <section id="role">
+    <div class="eyebrow reveal">Top pick, or just an option?</div>
+    <h2 class="reveal">When the AI recommends, is Wynn<br>the <span class="gold">first choice</span> — or the alternate?</h2>
+    <p class="lede reveal">Beyond the code-verified ranking above, we run a second, finer read: when an AI recommends Wynn, is it the <span class="gold">top pick</span> — or one of several options it lists? Across the answers we graded, Wynn is the outright #1 choice about half the time, a strong alternative the rest, and <span class="gold">never warned against.</span></p>
+    <div id="rolebars" style="margin-top:2.6rem; max-width:760px"></div>
+    <p class="lede reveal" style="margin-top:1.6rem; font-size:.92rem; color:#8f8676">This finer grade is an AI-assisted read — consensus-scored, with the raw answers stored — and we're calibrating it against human labels before we lean on it. The hard ranking it sits beside is pure code.</p>
+  </section>
+
+  <section id="creators">
+    <div class="eyebrow reveal">Who actually moves the needle</div>
+    <h2 class="reveal">Not journalists — <span class="gold">travel creators.</span></h2>
+    <p class="lede reveal">Ranking every <em>author</em> the models cite by measured contribution reveals the people driving Wynn's AI visibility — and they're overwhelmingly independent travel bloggers, not the names in a traditional journalist database.</p>
+    <div id="creatorlist" style="margin-top:2.4rem; max-width:760px"></div>
+    <p class="lede reveal" style="margin-top:1.6rem">A journalist-only rolodex is <span class="gold">blind to most of them.</span> Ours ranks the whole field by what actually gets cited.</p>
+    <p class="lede reveal" style="margin-top:1.2rem; font-size:.92rem; color:#8f8676">Early read: we pull a byline from about a third of cited pages so far, so the names are a directional shortlist, not a final leaderboard — it sharpens with every run.</p>
+  </section>
+
+  <section id="why">
+    <div class="tag reveal">What no PR tool can tell you</div>
+    <h2 class="reveal">The <span class="gold">"why"</span> — what the models actually cite.</h2>
+    <p class="lede reveal">On the surface a guest actually sees, here's where AI pulls its answers from. Traditional press? <span class="gold">Barely a factor.</span></p>
+    <div class="why" id="whybars" style="margin-top:2.6rem; max-width:820px"></div>
+    <div class="big-emph reveal">Press releases <span style="color:#9b9a8c">(2.3%)</span> and journalism <span style="color:#9b9a8c">(2%)</span> —<br>about&nbsp;4% <span class="gold">combined.</span></div>
+    <p class="lede reveal">The real levers are independent travel content, booking sites, and Reddit — exactly what a journalist database is blind to.</p>
+  </section>
+
+  <section id="sources">
+    <div class="eyebrow reveal">Who's actually getting seen</div>
+    <h2 class="reveal">The sources <span class="gold">moving your visibility.</span></h2>
+    <p class="lede reveal">Ranked by measured citation contribution across every run — the specific sites AI pulls from when it talks about Wynn. This is the influence map: <span class="gold">where to show up, who to work with.</span></p>
+    <div class="why" id="sourcebars" style="margin-top:2.4rem; max-width:800px"></div>
+  </section>
+
+  <section id="surfaces">
+    <div class="eyebrow reveal">One brand, two different truths</div>
+    <h2 class="reveal">Baked-in memory vs.<br><span class="gold">live search.</span></h2>
+    <p class="lede reveal">Most tools blend these together — or measure only one and don't tell you which. We split them, because they answer different questions and move on different clocks.</p>
+    <div class="twosurf">
+      <div class="surf-col reveal">
+        <div class="st">Baked-in memory</div>
+        <div class="sn">22.3%</div>
+        <div class="sl">Wynn's share of voice from the model's training — what it already believes. Pure recall, no sources to trace. <span class="gold">Changes slowly — press takes months to land.</span></div>
+      </div>
+      <div class="surf-col reveal">
+        <div class="st">Live web search</div>
+        <div class="sn">18.5%</div>
+        <div class="sl">Wynn's share when the model searches the live web — backed by thousands of real citations we fetch and verify. <span class="gold">Moves in days — one article can shift it this week.</span></div>
+      </div>
+    </div>
+    <p class="lede reveal" style="margin-top:1.8rem">A low score tells you nothing on its own. Split this way, it tells you <span class="gold">which lever to pull</span> — more press, or better live content.</p>
+  </section>
+
+  <section id="pillars">
+    <div class="eyebrow reveal">Why ours wins</div>
+    <h2 class="reveal">Better. Cheaper. <span class="gold">Owned.</span></h2>
+    <p class="lede reveal" style="margin-top:1rem">Sharper numbers, a fraction of the cost — and it's ours, not rented.</p>
+    <div class="pillars">
+      <div class="pillar reveal"><h3>Better</h3><p>Deep sampling with a real margin of error, recommendation-role (not just "mentioned"), the "why" by media type, and <span class="gold">re-derivable receipts</span> for every number. A clean snapshot, not a month-long average.</p></div>
+      <div class="pillar reveal"><h3>Cheaper</h3><p>About $10 a sweep on our own accounts — a fraction of an enterprise PR subscription. A full sweep runs in minutes, on demand, so you can re-run it before and after any campaign and prove what actually moved the needle.</p></div>
+      <div class="pillar reveal"><h3>Owned, not rented</h3><p>Our data, our infrastructure — no per-seat fees, no terms that bar us from acting on what we find. A vendor's opacity is their moat; ours is the opposite — every number traces to the raw answer, and we want you to audit it.</p></div>
+      <div class="pillar reveal"><h3>Built to compound</h3><p>The whole sweep runs end-to-end on a <span class="gold">single command</span> — no human judgment in the loop — and every run feeds the creator and source map. Put it on a schedule and it stays current on its own instead of going stale like a frozen rented tracker.</p></div>
+    </div>
+  </section>
+
+  <section id="proof">
+    <div class="eyebrow reveal">The foundation</div>
+    <h2 class="reveal">No LLM certifies the number.<br><span class="gold">Only code does.</span></h2>
+    <p class="lede reveal">Every metric is a pure function of stored raw responses. A keystone test regenerates all of it, bit-for-bit, or the build fails. Ask the system "how do you know?" — and it shows you the receipts. No competitor can.</p>
+    <p class="receipt reveal">REDERIVE OK — scores regenerate bit-for-bit from stored raw ✅</p>
+  </section>
+
+  <div class="foot">Wynn AI Visibility Intelligence · measured on real data, {DATE} · grounded in peer-reviewed GEO research (Princeton, KDD 2024)</div>
+</div>
+
+<script>
+const DATA = {
+  sov: [
+    {name:'Wynn Las Vegas', ours:22.3, mr:22.4, subj:true, mentions:928},
+    {name:'The Venetian', ours:18.4, mr:18.6, mentions:769},
+    {name:'ARIA', ours:15.2, mentions:632}, {name:'Bellagio', ours:14.6, mentions:607},
+    {name:'Caesars', ours:13.1, mentions:544}, {name:'Resorts World', ours:7.8, mentions:327},
+    {name:'MGM Grand', ours:6.9, mentions:289}, {name:'Fontainebleau', ours:1.7, mentions:72}
+  ],
+  sovN: 960,
+  gaps: [
+    {them:'One blended number per model', us:'Per-model <em>and</em> per-tier (Sonnet vs Opus) — each with a margin of error'},
+    {them:'Training-baked or live, blended and unlabeled', us:'Both surfaces split: the model\'s baked-in memory vs. live web search'},
+    {them:'A month-long average — the news shifts daily underneath it', us:'A clean point-in-time snapshot you can repeat exactly'},
+    {them:'"Mentioned" — appears somewhere in the answer', us:'Recommended: top pick vs. alternate vs. warned-against'},
+    {them:'A number you cannot audit', us:'Re-derivable receipts — every figure traces to the stored raw answer'},
+    {them:'A flat list of journalists', us:'Which sources and creators actually drive the citations, by measured contribution'}
+  ],
+  prominence: [
+    {surface:'ChatGPT', mentioned:93.0, first:62, ci:[57.9,65.9], n:560},
+    {surface:'Gemini Pro', mentioned:97.9, first:73, ci:[69.0,76.4], n:560},
+    {surface:'Claude Sonnet', mentioned:97.9, first:62, ci:[57.9,65.9], n:560},
+    {surface:'Claude Opus', mentioned:97.7, first:68, ci:[63.7,71.4], n:560}
+  ],
+  // real per-question resort shares, measured across 28 prompts x 4 models x N=20 (run 20260628T210000Z)
+  demo: [
+    {q:'most luxurious resort in Las Vegas', shares:[['Wynn',22],['The Venetian',18],['ARIA',17],['Bellagio',16],['Resorts World',9],['Caesars',8]]},
+    {q:'is Wynn worth the price?', shares:[['Wynn',32],['Bellagio',19],['The Venetian',16],['Caesars',13],['ARIA',13],['MGM Grand',6]]},
+    {q:'best hotel pools in Las Vegas', shares:[['Wynn',22],['MGM Grand',21],['Caesars',18],['The Venetian',16],['Bellagio',9],['ARIA',8]]},
+    {q:'best spa in Las Vegas', shares:[['Wynn',22],['Caesars',22],['The Venetian',20],['ARIA',19],['Bellagio',10],['Resorts World',6]]},
+    {q:'best VIP hotel experience', shares:[['Wynn',21],['ARIA',16],['Bellagio',16],['Caesars',15],['The Venetian',14],['Resorts World',10]]},
+    {q:'best dining at a Las Vegas hotel', shares:[['Caesars',17],['The Venetian',17],['Wynn',17],['Bellagio',16],['MGM Grand',16],['ARIA',13]]},
+    {q:'where high rollers stay on the Strip', shares:[['Wynn',17],['Bellagio',17],['ARIA',17],['Caesars',16],['The Venetian',15],['Resorts World',9]]},
+    {q:'Wynn vs The Venetian for luxury', shares:[['Wynn',45],['The Venetian',45],['Caesars',5],['Bellagio',4],['Resorts World',1]]}
+  ],
+  why: [
+    {type:'Independent travel content', pct:41.8},
+    {type:'OTAs / booking sites', pct:17.0},
+    {type:'Ranking listicles', pct:13.0},
+    {type:'User-generated (Reddit, Tripadvisor)', pct:10.0},
+    {type:'Competitor-owned sites', pct:7.9},
+    {type:'Wynn-owned', pct:3.5},
+    {type:'Press releases', pct:2.3},
+    {type:'Journalism', pct:2.0}
+  ],
+  role: [
+    {surface:'ChatGPT', primary:52, alt:42},
+    {surface:'Gemini Pro', primary:53, alt:44},
+    {surface:'Claude Sonnet', primary:43, alt:54},
+    {surface:'Claude Opus', primary:41, alt:48}
+  ],
+  sources: [
+    {name:'Tripadvisor', cites:50, type:'user-generated'},
+    {name:'lasvegasdeals.vegas', cites:42, type:'travel content'},
+    {name:'Reddit', cites:38, type:'user-generated'},
+    {name:'Expedia', cites:32, type:'booking site'},
+    {name:'YouTube', cites:27, type:'user-generated'},
+    {name:'Booking.com', cites:26, type:'booking site'},
+    {name:'wynnlasvegas.com', cites:23, type:'OWNED', owned:true},
+    {name:'Time Out', cites:15, type:'ranking guide'}
+  ],
+  creators: [
+    {name:'Talia G.', site:'Time Out', cites:12},
+    {name:'Marcus Reeves', site:'lasvegashotels.blog', cites:11},
+    {name:'Leslie Nics', site:'travelvaluefinder.com', cites:8},
+    {name:'Ascen Aynat', site:'capturetheatlas.com', cites:6},
+    {name:'Tanner Saunders', site:'The Points Guy', cites:5, kelly:true},
+    {name:'Johnathan L. Wright', site:'LV Review-Journal', cites:2, kelly:true},
+    {name:'Kelly Dobkin', site:'Resy', cites:2, kelly:true}
+  ]
+};
+document.querySelector('.foot').innerHTML = document.querySelector('.foot').innerHTML.replace('{DATE}', new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}));
+
+// build SoV bars
+const sb = document.getElementById('sovbars');
+const maxSov = Math.max(...DATA.sov.map(d=>d.ours));
+DATA.sov.forEach(d=>{
+  const cmp = d.mr!=null ? `<span class="cmpdot">Muck Rack ${d.mr}%</span>` : '';
+  sb.insertAdjacentHTML('beforeend',
+   `<div class="row" data-receipt="<div class='rt-h'>${d.name}</div>${d.mentions} mentions across ${DATA.sovN} model responses · ${d.ours}% share<br><span class='rt-ci'>re-derivable bit-for-bit from stored raw</span>"><div class="nm">${d.name}</div><div class="track"><div class="fill ${d.subj?'subj':''}" data-w="${d.ours/maxSov*100}"></div></div><div class="vl"><b style="color:#e7d3a8">${d.ours}%</b> ${cmp}</div></div>`);
+});
+// interactive prompt demo
+const dq=document.getElementById('demoq'), dbars=document.getElementById('demobars');
+let demoIdx=0, demoTimer=null, demoTaken=false;
+function selectDemo(i){ demoIdx=i; document.querySelectorAll('.qchip').forEach((c,k)=>c.classList.toggle('on',k===i)); renderDemo(i); }
+DATA.demo.forEach((d,i)=>{
+  const chip=document.createElement('div'); chip.className='qchip'+(i===0?' on':''); chip.textContent=d.q;
+  chip.onclick=()=>{ demoTaken=true; clearInterval(demoTimer); demoTimer=null; selectDemo(i); };
+  dq.appendChild(chip);
+});
+// auto-play through questions while the demo is on screen — until the visitor takes over
+new IntersectionObserver((es)=>{ es.forEach(e=>{
+  if(e.isIntersecting && !demoTaken && !demoTimer){ demoTimer=setInterval(()=>selectDemo((demoIdx+1)%DATA.demo.length), 3400); }
+  else if(!e.isIntersecting && demoTimer){ clearInterval(demoTimer); demoTimer=null; }
+});},{threshold:.35}).observe(document.getElementById('demo'));
+function renderDemo(i){
+  const d=DATA.demo[i], max=Math.max(...d.shares.map(s=>s[1]));
+  const wynnPct=(d.shares.find(s=>s[0]==='Wynn')||[,0])[1];
+  const rank=d.shares.filter(s=>s[1]>wynnPct).length+1;
+  const tied=d.shares.filter(s=>s[1]===wynnPct).length>1;
+  const badge=rank===1?(tied?'TIED #1':'#1'):'#'+rank;
+  dbars.innerHTML=d.shares.map(([name,pct])=>{
+    const wynn=name==='Wynn';
+    return `<div class="row drow ${wynn?'lead':''}" data-receipt="<div class='rt-h'>${name}</div>Named in ${pct}% of 80 answers to this question<br><span class='rt-ci'>4 models × 20 samples each</span>"><div class="nm" style="${wynn?'color:#e7d3a8;font-weight:500':''}">${name}</div>`+
+      `<div class="track"><div class="fill ${wynn?'subj':''}" style="width:0;${wynn?'':'background:linear-gradient(90deg,#5a4a30,#8a7038)'}"></div></div>`+
+      `<div class="vl"><b style="color:${wynn?'#e7d3a8':'#9b9a8c'}">${pct}%</b>${wynn?`<span class="dbadge">${badge}</span>`:''}</div></div>`;
+  }).join('');
+  requestAnimationFrame(()=>dbars.querySelectorAll('.fill').forEach((el,idx)=>el.style.width=(d.shares[idx][1]/max*100)+'%'));
+}
+renderDemo(0);
+// build WHY bars
+const wb = document.getElementById('whybars');
+const maxWhy = Math.max(...DATA.why.map(d=>d.pct));
+DATA.why.forEach(d=>{
+  const press = /Press|Journalism/.test(d.type);
+  wb.insertAdjacentHTML('beforeend',
+   `<div class="row"><div class="nm">${d.type}</div><div class="track"><div class="fill" data-w="${d.pct/maxWhy*100}" style="${press?'background:linear-gradient(90deg,#5a4a30,#7d6a45)':''}"></div></div><div class="vl"><b style="color:#e7d3a8">${d.pct}%</b></div></div>`);
+});
+// build prominence rings
+const pg = document.getElementById('promgrid');
+DATA.prominence.forEach(p=>{
+  const c=2*Math.PI*54;
+  pg.insertAdjacentHTML('beforeend',
+   `<div class="pcard reveal" data-receipt="<div class='rt-h'>${p.surface}</div>Ranked the #1 resort in ${p.first}% of ${p.n} answers<br><span class='rt-ci'>95% CI ${p.ci[0]}–${p.ci[1]}%</span>"><div class="surf">${p.surface}</div>
+     <div class="ring"><svg width="130" height="130"><circle cx="65" cy="65" r="54" stroke="rgba(255,255,255,.06)" stroke-width="9" fill="none"/>
+     <circle class="prog" cx="65" cy="65" r="54" stroke="#c8a86b" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" data-pct="${p.first}"/></svg>
+     <div class="num" data-count="${p.first}">0%</div></div>
+     <div class="ment">mentioned ${p.mentioned}% · <span style="color:#c8a86b">#1 in ${p.first}%</span></div></div>`);
+});
+
+// build SOURCES bars (impact DB)
+const srcb=document.getElementById('sourcebars');
+const maxSrc=Math.max(...DATA.sources.map(s=>s.cites));
+DATA.sources.forEach(s=>{
+  srcb.insertAdjacentHTML('beforeend',
+   `<div class="row"><div class="nm" style="width:200px">${s.name}<br><span style="font-size:.7rem;color:#8a8170">${s.type}</span></div>
+     <div class="track"><div class="fill ${s.owned?'subj':''}" data-w="${s.cites/maxSrc*100}" style="${s.owned?'':'background:linear-gradient(90deg,#6f5a32,#b8924a)'}"></div></div>
+     <div class="vl"><b style="color:#e7d3a8">${s.cites}</b> cites</div></div>`);
+});
+// build GAPS comparison (what standard tools miss vs ours)
+const cmp=document.getElementById('compare');
+cmp.insertAdjacentHTML('beforeend',`<div class="cmp-head reveal"><div class="h1">Standard AI-visibility tools</div><div class="h2">Ours</div></div>`);
+DATA.gaps.forEach(g=>{
+  cmp.insertAdjacentHTML('beforeend',`<div class="cmp-row reveal"><div class="them">${g.them}</div><div class="us">${g.us}</div></div>`);
+});
+// build ROLE stacked bars (PRIMARY vs ALT)
+const rb=document.getElementById('rolebars');
+DATA.role.forEach(r=>{
+  rb.insertAdjacentHTML('beforeend',
+   `<div class="row"><div class="nm">${r.surface}</div>
+     <div class="track" style="display:flex">
+       <div class="fill subj" data-w="${r.primary}" style="border-radius:4px 0 0 4px"></div>
+       <div class="fill" data-w="${r.alt}" style="background:rgba(200,168,107,.22); border-radius:0 4px 4px 0"></div>
+     </div>
+     <div class="vl" style="width:175px"><b style="color:#e7d3a8">${r.primary}%</b> top pick · ${r.alt}% alternate</div></div>`);
+});
+// build CREATOR list
+const cl=document.getElementById('creatorlist');
+const maxC=Math.max(...DATA.creators.map(c=>c.cites));
+DATA.creators.forEach(c=>{
+  const flag=c.kelly
+    ?`<span style="color:#7fb59b;font-size:.68rem;letter-spacing:.12em">IN MUCK RACK</span>`
+    :`<span style="color:#b98e3e;font-size:.68rem;letter-spacing:.12em">MISSED BY MUCK RACK</span>`;
+  cl.insertAdjacentHTML('beforeend',
+   `<div class="row"><div class="nm" style="width:210px;text-align:right">${c.name}<br><span style="font-size:.7rem;color:#8a8170">${c.site}</span></div>
+     <div class="track"><div class="fill" data-w="${c.cites/maxC*100}"></div></div>
+     <div class="vl" style="width:170px">${c.cites} cites · ${flag}</div></div>`);
+});
+
+// ---- GSAP animations ----
+gsap.registerPlugin(ScrollTrigger);
+// buttery smooth scroll (Lenis), synced to ScrollTrigger
+if(window.Lenis){
+  const lenis=new Lenis({duration:1.15,smoothWheel:true,wheelMultiplier:.9}); window.lenis=lenis;
+  lenis.on('scroll',ScrollTrigger.update);
+  gsap.ticker.add(t=>lenis.raf(t*1000)); gsap.ticker.lagSmoothing(0);
+}
+// each section ASSEMBLES — its elements converge from different angles and lock into place
+document.querySelectorAll('section').forEach(sec=>{
+  const items=[...sec.querySelectorAll('.reveal')];
+  items.forEach((el,i)=>{
+    const ang=i*2.39996+sec.id.length;            // golden-angle spread, seeded per section
+    const dist=120+(i%4)*46;
+    gsap.fromTo(el,
+      {opacity:0, x:Math.cos(ang)*dist, y:Math.sin(ang)*dist, rotateZ:Math.cos(ang*1.3)*8, scale:.82},
+      {opacity:1, x:0, y:0, rotateZ:0, scale:1, duration:1.5, ease:'back.out(1.25)', delay:i*0.09,
+       scrollTrigger:{trigger:sec, start:'top 80%', toggleActions:'play none none none'}});
+  });
+});
+gsap.utils.toArray('.fill').forEach(el=>{
+  gsap.to(el,{width:el.dataset.w+'%',duration:1.4,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});
+});
+gsap.utils.toArray('.ring .prog').forEach(el=>{
+  const c=2*Math.PI*54, pct=+el.dataset.pct;
+  gsap.to(el,{strokeDashoffset:c*(1-pct/100),duration:1.6,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 85%'}});
+});
+gsap.utils.toArray('.num').forEach(el=>{
+  const t={v:0};
+  gsap.to(t,{v:+el.dataset.count,duration:1.6,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 85%'},onUpdate:()=>el.textContent=Math.round(t.v)+'%'});
+});
+
+// section progress rail
+const navLabels={hero:'Top',validate:'Share',gaps:'Gaps',demo:'Try it',prominence:'Rank',role:'Role',creators:'Creators',why:'Why',sources:'Sources',surfaces:'Surfaces',pillars:'Why us',proof:'Proof'};
+const rail=document.getElementById('navrail');
+const navSecs=[...document.querySelectorAll('section')];
+navSecs.forEach(s=>{
+  const a=document.createElement('a'); a.dataset.id=s.id; a.innerHTML=`<span>${navLabels[s.id]||s.id}</span>`;
+  a.onclick=()=>{ window.lenis ? window.lenis.scrollTo(s,{duration:1.1}) : s.scrollIntoView({behavior:'smooth'}); };
+  rail.appendChild(a);
+});
+const dots=[...rail.children];
+const spy=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting){ dots.forEach(d=>d.classList.toggle('on', d.dataset.id===e.target.id)); }});},{rootMargin:'-45% 0px -45% 0px'});
+navSecs.forEach(s=>spy.observe(s));
+
+// receipts on hover — every headline number traces to its sample size + margin of error
+const rtip=document.getElementById('rtip');
+const placeTip=e=>{ rtip.style.left=Math.min(e.clientX+16,innerWidth-302)+'px'; rtip.style.top=Math.min(e.clientY+16,innerHeight-120)+'px'; };
+document.addEventListener('mouseover',e=>{ const el=e.target.closest('[data-receipt]'); if(el){ rtip.innerHTML=el.dataset.receipt; placeTip(e); rtip.style.opacity=1; }});
+document.addEventListener('mousemove',e=>{ if(rtip.style.opacity==='1') placeTip(e); });
+document.addEventListener('mouseout',e=>{ if(e.target.closest('[data-receipt]')) rtip.style.opacity=0; });
+addEventListener('scroll',()=>{ rtip.style.opacity=0; },{passive:true});   // never let it linger while scrolling
+</script>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js" } }</script>
+<script type="module">
+import * as THREE from 'three';
+const cv=document.getElementById('bg');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,200); cam.position.z=48;
+const field=new THREE.Group(); scene.add(field);
+const gold=new THREE.Color('#c8a86b'), dim=new THREE.Color('#4a3c22'), bright=new THREE.Color('#e7d3a8');
+
+// faint dust — depth
+const DN=1300, dpos=new Float32Array(DN*3), dcol=new Float32Array(DN*3);
+for(let i=0;i<DN;i++){ const r=22+Math.random()*42, t=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+  dpos[i*3]=r*Math.sin(ph)*Math.cos(t); dpos[i*3+1]=r*Math.sin(ph)*Math.sin(t)*.7; dpos[i*3+2]=r*Math.cos(ph);
+  const c=gold.clone().lerp(dim,Math.random()); dcol[i*3]=c.r; dcol[i*3+1]=c.g; dcol[i*3+2]=c.b; }
+const dg=new THREE.BufferGeometry();
+dg.setAttribute('position',new THREE.BufferAttribute(dpos,3)); dg.setAttribute('color',new THREE.BufferAttribute(dcol,3));
+field.add(new THREE.Points(dg,new THREE.PointsMaterial({size:.085,vertexColors:true,transparent:true,opacity:.46,depthWrite:false,blending:THREE.AdditiveBlending})));
+
+// the recommendation graph — glowing nodes + forming links
+const N=170, R=30, DIST=9, MAXL=1600;
+const P=[],V=[]; const npos=new Float32Array(N*3), ncol=new Float32Array(N*3);
+for(let i=0;i<N;i++){ const r=R*Math.cbrt(Math.random()), t=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+  P.push(new THREE.Vector3(r*Math.sin(ph)*Math.cos(t), r*Math.sin(ph)*Math.sin(t)*.7, r*Math.cos(ph)));
+  V.push(new THREE.Vector3((Math.random()-.5)*.011,(Math.random()-.5)*.011,(Math.random()-.5)*.011));
+  const c=Math.random()<.16?gold.clone().lerp(bright,.5):gold.clone().lerp(dim,.35+Math.random()*.5); ncol[i*3]=c.r; ncol[i*3+1]=c.g; ncol[i*3+2]=c.b; }
+const ng=new THREE.BufferGeometry();
+ng.setAttribute('position',new THREE.BufferAttribute(npos,3)); ng.setAttribute('color',new THREE.BufferAttribute(ncol,3));
+field.add(new THREE.Points(ng,new THREE.PointsMaterial({size:.4,vertexColors:true,transparent:true,opacity:.78,depthWrite:false,blending:THREE.AdditiveBlending})));
+const lpos=new Float32Array(MAXL*6), lcol=new Float32Array(MAXL*6);
+const lg=new THREE.BufferGeometry();
+lg.setAttribute('position',new THREE.BufferAttribute(lpos,3)); lg.setAttribute('color',new THREE.BufferAttribute(lcol,3));
+field.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.46,depthWrite:false,blending:THREE.AdditiveBlending})));
+
+const torch=document.getElementById('torch');
+let mx=0,my=0; addEventListener('mousemove',e=>{mx=e.clientX/innerWidth-.5; my=e.clientY/innerHeight-.5; if(torch){torch.style.left=e.clientX+'px'; torch.style.top=e.clientY+'px'; torch.style.opacity=1;}});
+addEventListener('mouseleave',()=>{if(torch)torch.style.opacity=0;});
+let sy=0; addEventListener('scroll',()=>sy=scrollY/innerHeight);
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight); cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix()});
+
+const H=P.map(p=>p.clone());   // home positions — spring keeps the field's shape
+const TGT=new THREE.Vector3(), LOC=new THREE.Vector3(), DC=new THREE.Vector3(), DH=new THREE.Vector3();
+function step(){
+  field.updateMatrixWorld();
+  TGT.set(mx*70,-my*48,14); field.worldToLocal(LOC.copy(TGT));   // cursor target in field space
+  for(let i=0;i<N;i++){ const p=P[i],v=V[i];
+    DC.copy(LOC).sub(p); const dist=DC.length()||1;
+    v.addScaledVector(DC.multiplyScalar(1/dist), Math.min(.06, 14/(dist*dist+18)));  // lean toward cursor
+    DH.copy(H[i]).sub(p); v.addScaledVector(DH,.010);                                 // spring home
+    v.multiplyScalar(.9); p.add(v);
+    npos[i*3]=p.x; npos[i*3+1]=p.y; npos[i*3+2]=p.z; }
+  ng.attributes.position.needsUpdate=true;
+  let n=0;
+  for(let i=0;i<N&&n<MAXL;i++) for(let j=i+1;j<N&&n<MAXL;j++){
+    const a=P[i],b=P[j],dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z,d2=dx*dx+dy*dy+dz*dz;
+    if(d2<DIST*DIST){ const f=(1-Math.sqrt(d2)/DIST)*.52, k=n*6;
+      lpos[k]=a.x; lpos[k+1]=a.y; lpos[k+2]=a.z; lpos[k+3]=b.x; lpos[k+4]=b.y; lpos[k+5]=b.z;
+      lcol[k]=lcol[k+3]=gold.r*f; lcol[k+1]=lcol[k+4]=gold.g*f; lcol[k+2]=lcol[k+5]=gold.b*f; n++; }
+  }
+  lg.setDrawRange(0,n*2); lg.attributes.position.needsUpdate=true; lg.attributes.color.needsUpdate=true;
+}
+(function loop(){requestAnimationFrame(loop);
+  step();
+  field.rotation.y+=0.0005; field.rotation.x=sy*0.12;
+  cam.position.x+=(mx*7-cam.position.x)*.035; cam.position.y+=(-my*7-cam.position.y)*.035; cam.lookAt(0,0,0);
+  renderer.render(scene,cam);
+})();
+</script>
+</body>
+</html>
